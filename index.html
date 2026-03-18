@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>netmeta-verify MCP Server &mdash; Instructions</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3e;
+      --accent:   #7c5cbf;
+      --accent2:  #4f8ef7;
+      --green:    #3ecf8e;
+      --yellow:   #f5a623;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --radius:   10px;
+      --mono:     'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,17,23,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 2rem;
+      display: flex; align-items: center; gap: 2rem;
+    }
+    nav .brand { font-weight: 700; font-size: 1rem; color: var(--accent); }
+    nav a { color: var(--muted); text-decoration: none; font-size: .88rem; transition: color .2s; }
+    nav a:hover { color: var(--text); }
+
+    .hero {
+      padding: 4rem 2rem 3rem;
+      background: radial-gradient(ellipse 70% 40% at 50% -5%, rgba(124,92,191,.13), transparent);
+    }
+    .hero .breadcrumb { color: var(--muted); font-size: .85rem; margin-bottom: 1rem; }
+    .hero .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .hero .breadcrumb a:hover { color: var(--text); }
+    .hero h1 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: .75rem; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); max-width: 680px; font-size: 1.05rem; }
+
+    .layout { display: flex; max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem; gap: 2.5rem; }
+    aside {
+      width: 220px; flex-shrink: 0;
+      position: sticky; top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto; padding: 2rem 0;
+    }
+    aside nav { all: unset; display: flex; flex-direction: column; gap: .1rem; }
+    aside nav a {
+      display: block; padding: .35rem .75rem;
+      color: var(--muted); text-decoration: none;
+      font-size: .85rem; border-radius: 6px;
+      transition: background .15s, color .15s;
+    }
+    aside nav a:hover, aside nav a.active { background: rgba(124,92,191,.12); color: var(--accent); }
+    aside nav .nav-section {
+      font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); padding: .6rem .75rem .2rem; margin-top: .5rem;
+    }
+
+    main { flex: 1; min-width: 0; padding: 2.5rem 0; }
+
+    h2 { font-size: 1.45rem; font-weight: 700; letter-spacing: -.02em; margin: 2.5rem 0 .5rem; padding-top: .5rem; }
+    h2:first-child { margin-top: 0; }
+    h3 { font-size: 1.05rem; font-weight: 700; margin: 1.75rem 0 .4rem; }
+    p  { color: var(--muted); margin-bottom: .85rem; font-size: .95rem; }
+    ul, ol { color: var(--muted); font-size: .93rem; padding-left: 1.4rem; margin-bottom: .85rem; }
+    li { margin-bottom: .3rem; }
+    strong { color: var(--text); }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+    a { color: var(--accent2); }
+
+    .tag {
+      display: inline-block; font-size: .72rem; font-weight: 600;
+      letter-spacing: .05em; text-transform: uppercase;
+      padding: .18rem .6rem; border-radius: 100px;
+    }
+    .tag-beta { background: rgba(245,166,35,.13); color: var(--yellow); border: 1px solid rgba(245,166,35,.3); }
+
+    .endpoint-box {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1rem 1.25rem;
+      margin-bottom: .75rem; flex-wrap: wrap;
+    }
+    .endpoint-box code {
+      font-family: var(--mono); font-size: .82rem;
+      background: rgba(124,92,191,.12); color: var(--accent);
+      padding: .2rem .55rem; border-radius: 5px;
+      flex: 1; word-break: break-all;
+    }
+
+    pre {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.3rem;
+      font-family: var(--mono); font-size: .8rem;
+      overflow-x: auto; color: #a9b8d0; line-height: 1.75;
+      margin: .5rem 0 1rem;
+    }
+    code { font-family: var(--mono); font-size: .82rem; background: rgba(255,255,255,.07); padding: .1rem .35rem; border-radius: 4px; color: #c9d6e8; }
+    pre code { background: none; padding: 0; font-size: inherit; }
+
+    .tool-grid { display: flex; flex-direction: column; gap: .6rem; margin-bottom: 1rem; }
+    .tool-row {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: .85rem 1.1rem;
+    }
+    .tool-row .tname { font-family: var(--mono); font-size: .85rem; color: var(--accent); font-weight: 600; }
+    .tool-row .tdesc { color: var(--muted); font-size: .87rem; margin-top: .2rem; }
+
+    .callout {
+      background: rgba(124,92,191,.07); border: 1px solid rgba(124,92,191,.25);
+      border-radius: var(--radius); padding: 1rem 1.25rem;
+      margin: 1rem 0; font-size: .9rem; color: var(--text);
+    }
+    .callout.info { background: rgba(79,142,247,.07); border-color: rgba(79,142,247,.2); }
+    .callout.warn { background: rgba(245,166,35,.07); border-color: rgba(245,166,35,.25); }
+
+    /* math-like display */
+    .math {
+      display: block;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .9rem 1.2rem;
+      font-family: var(--mono); font-size: .83rem;
+      color: #c9d6e8; margin: .6rem 0 1rem;
+      letter-spacing: .01em;
+    }
+
+    .test-list { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1rem; }
+    .test-item {
+      display: flex; align-items: flex-start; gap: .85rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: .8rem 1rem;
+    }
+    .test-num {
+      min-width: 24px; height: 24px;
+      background: rgba(124,92,191,.25); color: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .test-body h4 { font-size: .9rem; font-weight: 600; margin-bottom: .15rem; }
+    .test-body p  { font-size: .84rem; color: var(--muted); margin: 0; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: .88rem; }
+    th, td { text-align: left; padding: .6rem .9rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    td code { font-size: .78rem; }
+
+    .output-block {
+      background: #0a0c12; border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.3rem;
+      font-family: var(--mono); font-size: .78rem;
+      line-height: 1.7; color: #8892a4;
+      margin: .5rem 0 1rem;
+    }
+    .output-block .pass { color: var(--green); }
+    .output-block .fail { color: #f47174; }
+    .output-block .head { color: var(--text); font-weight: 600; }
+    .output-block .val  { color: #c9d6e8; }
+
+    footer { border-top: 1px solid var(--border); text-align: center; padding: 2rem; color: var(--muted); font-size: .82rem; }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="brand">MCP &middot; Evidence Synthesis</span>
+  <a href="../">Home</a>
+  <a href="../netmeta/">netmeta</a>
+  <a href="#tools">Tools</a>
+  <a href="#install">Installation</a>
+  <a href="#theory">Theory</a>
+</nav>
+
+<div class="hero">
+  <div class="breadcrumb"><a href="../">Home</a> &rsaquo; netmeta-verify MCP Server</div>
+  <h1><span>netmeta-verify</span> MCP Server</h1>
+  <p>
+    Mathematical verification of network meta-analysis results and reproducible
+    R code generation. Verify that NMA output is the unique MLE / satisfies REML
+    conditions — without re-running the analysis.
+  </p>
+</div>
+
+<div class="layout">
+
+  <!-- sidebar -->
+  <aside>
+    <nav>
+      <span class="nav-section">Getting started</span>
+      <a href="#hosted">Hosted server</a>
+      <a href="#install">Installation</a>
+      <a href="#clients">Client config</a>
+
+      <span class="nav-section">Reference</span>
+      <a href="#tools">Tools</a>
+      <a href="#prompts">Example prompts</a>
+
+      <span class="nav-section">Theory</span>
+      <a href="#theory-fe">Fixed-effect MLE</a>
+      <a href="#theory-re">Random-effect REML</a>
+      <a href="#theory-multiarm">Multi-arm studies</a>
+      <a href="#theory-codegen">Code generation</a>
+
+      <span class="nav-section">Advanced</span>
+      <a href="#r-direct">Direct R use</a>
+      <a href="#docker">Docker</a>
+      <a href="#deps">Dependencies</a>
+    </nav>
+  </aside>
+
+  <!-- main content -->
+  <main>
+
+    <!-- ── Hosted ── -->
+    <h2 id="hosted">Hosted server</h2>
+    <p>A public instance runs alongside the netmeta server at AUTH Biostatistics.</p>
+
+    <div class="endpoint-box">
+      <strong>netmeta-verify MCP</strong>
+      <code>https://biostatistics.med.auth.gr/mcp/netmeta-verify/mcp</code>
+      <span class="tag tag-beta">Beta</span>
+    </div>
+
+    <pre>{
+  "mcpServers": {
+    "netmeta-verify": {
+      "url": "https://biostatistics.med.auth.gr/mcp/netmeta-verify/mcp"
+    }
+  }
+}</pre>
+
+    <p>Use it together with the netmeta server for a complete workflow: analyse, then verify.</p>
+
+    <hr>
+
+    <!-- ── Install ── -->
+    <h2 id="install">Self-hosted installation</h2>
+
+    <h3>Option A &mdash; Docker (recommended)</h3>
+    <p>The verify image additionally installs <code>igraph</code> and <code>multiarmvars</code>.</p>
+    <pre>git clone --recurse-submodules https://github.com/tpapak/mcp.git
+cd mcp/netmeta
+docker compose up -d   # starts both netmeta (8000) and verify (8001)</pre>
+
+    <h3>Option B &mdash; Native</h3>
+    <pre># 1. Follow the netmeta-mcp native install steps first, then:
+
+conda activate netmeta-mcp
+
+# 2. Install extra R packages
+R -e "install.packages('igraph')"
+R -e "remotes::install_github('tpapak/multiarmvars')"
+
+# 3. Run the verify server (stdio)
+netmeta-verify-mcp
+
+# 3. Or HTTP
+python -m netmeta_verify.http_server
+# → http://localhost:8001/mcp</pre>
+
+    <div class="callout warn">
+      The verifier R scripts are in the <code>verifier/</code> sibling directory.
+      If you cloned only <code>mcp-netmeta</code>, set the environment variable:<br><br>
+      <code>export VERIFIERS_DIR=/path/to/mcp/verifier</code>
+    </div>
+
+    <hr>
+
+    <!-- ── Client config ── -->
+    <h2 id="clients">Client configuration</h2>
+    <pre>{
+  "mcpServers": {
+    "netmeta": {
+      "url": "https://biostatistics.med.auth.gr/mcp/netmeta/mcp"
+    },
+    "netmeta-verify": {
+      "url": "https://biostatistics.med.auth.gr/mcp/netmeta-verify/mcp"
+    }
+  }
+}</pre>
+    <p>Or for a local native install:</p>
+    <pre>{
+  "mcpServers": {
+    "netmeta-verify": {
+      "command": "/path/to/conda/envs/netmeta-mcp/bin/python",
+      "args": ["-m", "netmeta_verify.server"]
+    }
+  }
+}</pre>
+
+    <hr>
+
+    <!-- ── Tools ── -->
+    <h2 id="tools">Tools</h2>
+
+    <div class="tool-grid">
+      <div class="tool-row">
+        <div class="tname">verify_fixed_effect_mle</div>
+        <div class="tdesc">
+          Verify that a fixed-effect NMA league table is the unique maximum likelihood estimate.
+          Checks score equations, positive-definite Hessian, uniqueness, WLS equivalence,
+          and multi-arm variance consistency.
+        </div>
+      </div>
+      <div class="tool-row">
+        <div class="tname">verify_random_effect_reml</div>
+        <div class="tdesc">
+          Verify that a random-effects NMA satisfies all REML optimality conditions:
+          fixed-effects score, REML score for τ², positive-definite information matrix,
+          τ² &ge; 0, uniqueness, GLS equivalence, and log-likelihood maximum.
+        </div>
+      </div>
+      <div class="tool-row">
+        <div class="tname">generate_nma_code</div>
+        <div class="tdesc">
+          Generate a complete, standalone R script that reproduces any NMA.
+          Embeds data, runs netmeta(), and optionally includes rankings,
+          league table, forest plot, and network graph. Suitable for publication
+          supplementary materials.
+        </div>
+      </div>
+    </div>
+
+    <h3>Input format for verify tools</h3>
+    <p>Both verify tools accept the same pairwise contrast format as <code>runnetmeta</code>, plus a <code>league_table</code> argument:</p>
+
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>data</code></td><td>list of dicts</td><td>Pairwise contrasts: study, treat1, treat2, TE, seTE</td></tr>
+        <tr><td><code>league_table</code></td><td>list of dicts</td><td>NMA output: treat1, treat2, effect</td></tr>
+        <tr><td><code>reference</code></td><td>string</td><td>Reference treatment name</td></tr>
+        <tr><td><code>tau2</code></td><td>float</td><td>Between-study variance τ² (random effects only)</td></tr>
+        <tr><td><code>tol</code></td><td>float</td><td>Numerical tolerance (default 1e-6 / 1e-4)</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- ── Example prompts ── -->
+    <h2 id="prompts">Example prompts</h2>
+
+    <h3>Verify after running NMA</h3>
+    <pre>I just ran a network meta-analysis. Here is my input data and the
+fixed-effect league table output. Please verify that the league table
+is the unique maximum likelihood estimate.
+
+[paste data and league table]</pre>
+
+    <h3>Full workflow with both servers</h3>
+    <pre>1. Run a network meta-analysis on this data with Placebo as reference.
+2. Verify that the fixed-effect results are the unique MLE.
+3. Generate a reproducible R script I can include in my paper.
+
+study,treat1,treat2,TE,seTE
+Study1,Placebo,DrugA,0.5,0.2
+Study2,Placebo,DrugB,0.8,0.25
+Study3,DrugA,DrugB,0.3,0.22</pre>
+
+    <h3>Generate R code only</h3>
+    <pre>Generate a standalone R script for this NMA using mean difference,
+random effects, REML for tau, with Placebo as reference.
+Include rankings and a forest plot.
+
+[paste CSV data]</pre>
+
+    <hr>
+
+    <!-- ── Theory: fixed effect ── -->
+    <h2 id="theory-fe">Theory: fixed-effect MLE verification</h2>
+
+    <p>
+      For a fixed-effect NMA with normal contrast-level data, the maximum likelihood
+      estimate is equivalent to weighted least squares. The verifier checks
+      <strong>five necessary and sufficient conditions</strong> without re-fitting the model.
+    </p>
+
+    <div class="test-list">
+      <div class="test-item">
+        <div class="test-num">1</div>
+        <div class="test-body">
+          <h4>Score equations = 0</h4>
+          <p>Gradient of the log-likelihood is zero at the reported estimates.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">2</div>
+        <div class="test-body">
+          <h4>Information matrix positive definite</h4>
+          <p>All eigenvalues of X&prime;WX are positive, confirming a maximum not a saddle point.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">3</div>
+        <div class="test-body">
+          <h4>Unique solution (full rank)</h4>
+          <p>rank(X&prime;WX) = number of parameters. Guaranteed when the network is connected.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">4</div>
+        <div class="test-body">
+          <h4>Matches WLS closed form</h4>
+          <p>Estimates equal (X&prime;WX)⁻¹ X&prime;Wy to within numerical tolerance.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">5</div>
+        <div class="test-body">
+          <h4>Multi-arm variance consistency</h4>
+          <p>
+            For multi-arm studies, contrast variances must be decomposable into
+            non-negative arm variances. Checked via the
+            <a href="https://github.com/tpapak/multiarmvars" target="_blank">multiarmvars</a> package.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="math">
+      score:  X&prime;W(y &minus; X&theta;&#770;) = 0
+      info:   X&prime;WX &succ; 0
+      WLS:    &theta;&#770; = (X&prime;WX)&minus;&sup1; X&prime;Wy
+    </div>
+
+    <p>
+      Where X is the design matrix, W = V⁻¹ is the weight matrix (inverse of the
+      within-study covariance), y are the observed contrasts, and &theta;&#770; are the
+      reported treatment effects.
+    </p>
+
+    <h3>Example output</h3>
+    <div class="output-block">
+<span class="head">=== Fixed-Effect NMA MLE Verification ===</span>
+
+Observations: 28 &nbsp;|&nbsp; Studies: 26 (1 multi-arm) &nbsp;|&nbsp; Parameters: 9
+Reference: plac &nbsp;|&nbsp; Tolerance: 1.00e-06
+
+<span class="pass">[PASS]</span> Score equations = 0
+<span class="pass">[PASS]</span> Information matrix positive definite
+<span class="pass">[PASS]</span> Unique solution
+<span class="pass">[PASS]</span> Matches WLS solution
+<span class="pass">[PASS]</span> Multi-arm variance consistency
+
+Result: <span class="val">5/5 tests passed</span>
+
+CONCLUSION: Output is the <span class="pass">UNIQUE maximum likelihood estimate</span>.
+    </div>
+
+    <hr>
+
+    <!-- ── Theory: REML ── -->
+    <h2 id="theory-re">Theory: random-effect REML verification</h2>
+
+    <p>
+      REML estimation has two coupled optimality conditions: one for the treatment
+      effects &theta; given &tau;², and one for the heterogeneity variance &tau;² itself.
+      The verifier checks <strong>seven conditions</strong>.
+    </p>
+
+    <div class="test-list">
+      <div class="test-item">
+        <div class="test-num">1</div>
+        <div class="test-body">
+          <h4>Fixed-effects score = 0 given &tau;²</h4>
+          <p>X&prime;W(&tau;²)(y &minus; X&theta;&#770;) = 0</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">2</div>
+        <div class="test-body">
+          <h4>REML score for &tau;² = 0</h4>
+          <p>
+            &minus;&frac12;[tr(P) &minus; r&prime;P²r] = 0 at the interior solution.
+            At the boundary &tau;² = 0, the score must be &le; 0.
+          </p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">3</div>
+        <div class="test-body">
+          <h4>Information matrix positive definite</h4>
+          <p>Confirms a maximum in treatment-effect space.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">4</div>
+        <div class="test-body">
+          <h4>&tau;² &ge; 0</h4>
+          <p>The between-study variance is non-negative.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">5</div>
+        <div class="test-body">
+          <h4>Unique solution</h4>
+          <p>Network is connected, full rank.</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">6</div>
+        <div class="test-body">
+          <h4>Matches GLS closed form</h4>
+          <p>&theta;&#770; = (X&prime;W(&tau;²)X)⁻¹ X&prime;W(&tau;²)y</p>
+        </div>
+      </div>
+      <div class="test-item">
+        <div class="test-num">7</div>
+        <div class="test-body">
+          <h4>REML log-likelihood is at a maximum</h4>
+          <p>
+            Perturbation test: the REML log-likelihood decreases when &tau;² is
+            shifted by &plusmn;&delta;.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p>The random-effects weight matrix is:</p>
+    <div class="math">W(&tau;²) = (V + &tau;²I)&minus;&sup1;</div>
+    <p>
+      where V is the within-study covariance matrix (diagonal for two-arm studies,
+      with off-diagonal elements for multi-arm studies).
+    </p>
+
+    <h3>Example output</h3>
+    <div class="output-block">
+<span class="head">=== Random-Effect NMA REML Verification ===</span>
+
+tau²: <span class="val">0.018762</span> &nbsp;(tau = 0.1370) &nbsp;|&nbsp; Tolerance: 1.00e-04
+
+<span class="pass">[PASS]</span> Fixed effects score = 0
+<span class="pass">[PASS]</span> REML score for tau² = 0
+<span class="pass">[PASS]</span> Information matrix positive definite
+<span class="pass">[PASS]</span> tau² &ge; 0
+<span class="pass">[PASS]</span> Unique solution
+<span class="pass">[PASS]</span> Matches GLS solution
+<span class="pass">[PASS]</span> REML is at maximum
+
+Result: <span class="val">7/7 tests passed</span>
+
+CONCLUSION: Output <span class="pass">satisfies REML conditions</span>.
+    </div>
+
+    <hr>
+
+    <!-- ── Theory: multi-arm ── -->
+    <h2 id="theory-multiarm">Multi-arm study handling</h2>
+
+    <p>
+      Multi-arm studies contribute correlated observations. For a comparison
+      d<sub>ij</sub> between arms i and j:
+    </p>
+    <div class="math">
+      Var(d<sub>ij</sub>) = V<sub>i</sub> + V<sub>j</sub>
+      Cov(d<sub>ij</sub>, d<sub>ik</sub>) = V<sub>i</sub>  (shared arm i)
+    </div>
+    <p>
+      The verifier uses the
+      <a href="https://github.com/tpapak/multiarmvars" target="_blank">multiarmvars</a>
+      package to recover arm variances V<sub>i</sub> from the observed contrast
+      variances, then builds the full covariance matrix with correct off-diagonal
+      elements.
+    </p>
+    <p>
+      <strong>Note on netmeta&rsquo;s approximation.</strong>
+      The netmeta package uses an approximate method that inflates variances to
+      achieve approximate independence between contrasts. This is valid and commonly
+      used, but gives slightly different estimates from the exact MLE. When verifying
+      netmeta output with multi-arm data the fixed-effect MLE test will fail;
+      the discrepancy is typically small (&lt; 0.05).
+    </p>
+
+    <div class="callout info">
+      Treatments <em>not</em> connected to multi-arm studies will match the exact
+      MLE exactly. The verify tool reports per-study arm variance diagnostics so
+      you can identify where discrepancies originate.
+    </div>
+
+    <hr>
+
+    <!-- ── Theory: code gen ── -->
+    <h2 id="theory-codegen">Reproducible R code generation</h2>
+
+    <p>
+      <code>generate_nma_code</code> produces a self-contained R script that:
+    </p>
+    <ul>
+      <li>Embeds the full dataset as inline R code (no external files)</li>
+      <li>Calls <code>netmeta()</code> with all relevant parameters</li>
+      <li>Optionally includes P-score rankings, league table, forest plot, network graph</li>
+      <li>Prints heterogeneity and Q-statistics for basic verification</li>
+    </ul>
+    <p>
+      Running the generated script reproduces the original results to machine precision.
+      It is suitable for inclusion in supplementary materials or journal submissions
+      that require reproducible analyses.
+    </p>
+
+    <hr>
+
+    <!-- ── Direct R ── -->
+    <h2 id="r-direct">Direct R usage (without MCP)</h2>
+
+    <p>The verifier scripts can be used standalone in any R session.</p>
+
+    <h3>Fixed-effect verification</h3>
+    <pre>source("verifier/verify_fixed_effect_mle.R")
+
+library(netmeta)
+data(Senn2013)
+
+nma &lt;- netmeta(
+  TE = Senn2013$TE, seTE = Senn2013$seTE,
+  treat1 = Senn2013$treat1, treat2 = Senn2013$treat2,
+  studlab = Senn2013$studlab,
+  sm = "MD", common = TRUE, random = FALSE,
+  reference.group = "plac"
+)
+
+v &lt;- verify_netmeta_mle(nma)
+print_verification(v)</pre>
+
+    <h3>Random-effect (REML) verification</h3>
+    <pre>source("verifier/verify_random_effect_reml.R")
+
+nma &lt;- netmeta(
+  TE = Senn2013$TE, seTE = Senn2013$seTE,
+  treat1 = Senn2013$treat1, treat2 = Senn2013$treat2,
+  studlab = Senn2013$studlab,
+  sm = "MD", common = FALSE, random = TRUE,
+  method.tau = "REML", reference.group = "plac"
+)
+
+v &lt;- verify_netmeta_reml(nma, tol = 1e-4)
+print_reml_verification(v)</pre>
+
+    <h3>Verify any software output (not just netmeta)</h3>
+    <pre>source("verifier/verify_fixed_effect_mle.R")
+
+# league_table: square matrix, rownames = colnames = treatment names
+league_table &lt;- matrix(
+  c( 0, -0.5, -0.8,
+     0.5,  0, -0.3,
+     0.8,  0.3,  0),
+  nrow = 3, byrow = TRUE,
+  dimnames = list(c("A","B","C"), c("A","B","C"))
+)
+
+v &lt;- verify_fixed_effect_mle(
+  TE      = c(0.5, 0.8, 0.3),
+  seTE    = c(0.1, 0.15, 0.12),
+  treat1  = c("A","A","B"),
+  treat2  = c("B","C","C"),
+  studlab = c("S1","S2","S3"),
+  league_table = league_table,
+  reference = "C"
+)
+print_verification(v)</pre>
+
+    <h3>Running tests</h3>
+    <pre>Rscript verifier/tests/test_verify_fixed_effect_mle.R
+Rscript verifier/tests/test_verify_fixed_effect_multiarm.R
+Rscript verifier/tests/test_verify_random_effect_reml.R
+Rscript verifier/tests/test_generate_r_code.R</pre>
+
+    <hr>
+
+    <!-- ── Docker ── -->
+    <h2 id="docker">Docker</h2>
+    <p>The <code>Dockerfile.verify</code> in <code>mcp/netmeta/</code> builds the verify image. It clones this <code>verifier/</code> repo into <code>/opt/mcp/verifier</code> at build time.</p>
+    <pre>docker build -f Dockerfile.verify -t netmeta-verify-mcp .
+docker run -p 8001:8001 netmeta-verify-mcp</pre>
+
+    <hr>
+
+    <!-- ── Deps ── -->
+    <h2 id="deps">R dependencies</h2>
+
+    <table>
+      <thead><tr><th>Package</th><th>Required by</th><th>Install</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>netmeta</td><td>all tools</td>
+          <td><code>remotes::install_github('guido-s/netmeta@5ecfc1d...')</code></td>
+        </tr>
+        <tr>
+          <td>igraph</td><td>multi-arm verifiers</td>
+          <td><code>install.packages('igraph')</code></td>
+        </tr>
+        <tr>
+          <td>multiarmvars</td><td>multi-arm verifiers</td>
+          <td><code>remotes::install_github('tpapak/multiarmvars')</code></td>
+        </tr>
+        <tr>
+          <td>jsonlite</td><td>MCP bridge</td>
+          <td><code>install.packages('jsonlite')</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+  </main>
+</div>
+
+<footer>
+  <p>
+    <a href="../">MCP Evidence Synthesis</a> &mdash;
+    <a href="https://github.com/tpapak/mcp-netmeta" target="_blank">mcp-netmeta</a> &mdash;
+    <a href="https://github.com/tpapak/multiarmvars" target="_blank">multiarmvars</a> &mdash;
+    GPL-3.0 &mdash;
+    <a href="https://biostatistics.med.auth.gr" target="_blank">Biostatistics AUTH</a>
+  </p>
+</footer>
+
+</body>
+</html>
