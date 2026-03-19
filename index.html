@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>netmeta-verify MCP Server &mdash; Instructions</title>
+  <title>verify MCP Server &mdash; Instructions</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -185,8 +185,8 @@
 </nav>
 
 <div class="hero">
-  <div class="breadcrumb"><a href="../">Home</a> &rsaquo; netmeta-verify MCP Server</div>
-  <h1><span>netmeta-verify</span> MCP Server</h1>
+  <div class="breadcrumb"><a href="../">Home</a> &rsaquo; verify MCP Server</div>
+  <h1><span>verify</span> MCP Server</h1>
   <p>
     Mathematical verification of network meta-analysis results and reproducible
     R code generation. Verify that NMA output is the unique MLE / satisfies REML
@@ -229,15 +229,15 @@
     <p>A public instance runs alongside the netmeta server at AUTH Biostatistics.</p>
 
     <div class="endpoint-box">
-      <strong>netmeta-verify MCP</strong>
-      <code>https://biostatistics.med.auth.gr/mcp/netmeta-verify</code>
+      <strong>verify MCP</strong>
+      <code>https://biostatistics.med.auth.gr/mcp/verify</code>
       <span class="tag tag-beta">Beta</span>
     </div>
 
     <pre>{
   "mcpServers": {
-    "netmeta-verify": {
-      "url": "https://biostatistics.med.auth.gr/mcp/netmeta-verify"
+    "verify": {
+      "url": "https://biostatistics.med.auth.gr/mcp/verify"
     }
   }
 }</pre>
@@ -265,7 +265,7 @@ R -e "install.packages('igraph')"
 R -e "remotes::install_github('tpapak/multiarmvars')"
 
 # 3. Run the verify server (stdio)
-netmeta-verify-mcp
+verify-mcp
 
 # 3. Or HTTP
 python -m netmeta_verify.http_server
@@ -286,15 +286,15 @@ python -m netmeta_verify.http_server
     "netmeta": {
       "url": "https://biostatistics.med.auth.gr/mcp/netmeta"
     },
-    "netmeta-verify": {
-      "url": "https://biostatistics.med.auth.gr/mcp/netmeta-verify"
+    "verify": {
+      "url": "https://biostatistics.med.auth.gr/mcp/verify"
     }
   }
 }</pre>
     <p>Or for a local native install:</p>
     <pre>{
   "mcpServers": {
-    "netmeta-verify": {
+    "verify": {
       "command": "/path/to/conda/envs/netmeta-mcp/bin/python",
       "args": ["-m", "netmeta_verify.server"]
     }
@@ -682,8 +682,8 @@ Rscript verifier/tests/test_generate_r_code.R</pre>
     <!-- ── Docker ── -->
     <h2 id="docker">Docker</h2>
     <p>The <code>Dockerfile.verify</code> in <code>mcp/netmeta/</code> builds the verify image. It clones this <code>verifier/</code> repo into <code>/opt/mcp/verifier</code> at build time.</p>
-    <pre>docker build -f Dockerfile.verify -t netmeta-verify-mcp .
-docker run -p 8001:8001 netmeta-verify-mcp</pre>
+    <pre>docker build -f Dockerfile.verify -t verify-mcp .
+docker run -p 8001:8001 verify-mcp</pre>
 
     <hr>
 
